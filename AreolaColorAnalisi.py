@@ -11,12 +11,14 @@ from PIL import Image
 # Deve essere il primo comando Streamlit
 st.set_page_config(layout="wide")
 
-# CSS per nascondere il menu, il footer e l'header
+# CSS per nascondere il menu, il footer, l'header e il pulsante "Manage app"
 hide_st_style = """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    .stDeployButton {display:none;}
+    #stDecoration {display:none;}
     </style>
     """
 st.markdown(hide_st_style, unsafe_allow_html=True)
