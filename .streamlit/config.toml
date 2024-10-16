@@ -3,3 +3,9 @@ showSidebarNavigation = false
 
 [theme]
 base="light"
+
+[ui]
+hideMenu = true
+
+hideToolbar =
+hideToolbar = true
