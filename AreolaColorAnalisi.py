@@ -7,6 +7,16 @@ import io
 import base64
 from PIL import Image
 
+# CSS to hide Streamlit's header and footer
+hide_menu_style = """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        </style>
+        """
+st.markdown(hide_menu_style, unsafe_allow_html=True)
+
 st.set_page_config(layout="wide")
 
 
