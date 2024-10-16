@@ -1,14 +1,21 @@
-[client]
-showSidebarNavigation = false
+[server]
+headless = true
+port = 8501
+enableCORS = false
 
 [theme]
-base="light"
+primaryColor = "#F39C12"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[global]
+hideTopBar = true
+
+[browser]
+gatherUsageStats = false
 
 [ui]
 hideMenu = true
-
 hideToolbar = true
-
-[global]
-
-hideTopBar = true
