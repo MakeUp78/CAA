@@ -8,3 +8,7 @@ base="light"
 hideMenu = true
 
 hideToolbar = true
+
+[global]
+
+hideTopBar = true
