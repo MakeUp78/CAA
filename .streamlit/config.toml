@@ -1,2 +1,40 @@
+[global]
+developmentMode = false
+
+[server]
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#F63366"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = false
+
+[runner]
+magicEnabled = false
+fastReruns = true
+
 [ui]
 hideTopBar = true
+hideSidebarNav = true
+allowLogin = false
+
+[logger]
+level = "critical"
+
+[deprecation]
+showfilehiddenwarn = false
+showPyplotGlobalUse = false
+
+[mapbox]
+token = ""
