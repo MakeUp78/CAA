@@ -7,5 +7,4 @@ base="light"
 [ui]
 hideMenu = true
 
-hideToolbar =
 hideToolbar = true
