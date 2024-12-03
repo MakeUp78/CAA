@@ -16,7 +16,7 @@
       ]
     }
   },
-  "updateContentCommand": "pip3 install --user -r requirements.txt && echo '✅ Requirements installed'",
+  "updateContentCommand": "sudo apt-get update && sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev && pip3 install --user -r requirements.txt && echo '✅ Requirements installed'",
   "postAttachCommand": {
     "server": "streamlit run AreolaColorAnalisi.py --server.enableCORS false --server.enableXsrfProtection false"
   },
