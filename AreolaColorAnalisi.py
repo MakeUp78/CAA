@@ -8,7 +8,10 @@ import base64
 from PIL import Image
 from formulazioneSIL import generate_mixture  # Importa la funzione per la formulazione
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # Definizione della palette e dei nomi dei colori
 DEFAULT_PALETTE_RGB = [
