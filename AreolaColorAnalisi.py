@@ -9,10 +9,29 @@ from PIL import Image
 from formulazioneSIL import generate_mixture  # Importa la funzione per la formulazione
 
 st.set_page_config(
+    page_title="Areola Color Analisi",
+    page_icon="🔍",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None
+    }
 )
 
+# Per schermi piccoli
+if st.session_state.get('is_mobile', False):
+    st.markdown("""
+        <style>
+        .element-container {
+            width: 100% !important;
+        }
+        .stButton button {
+            width: 100%;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 # Definizione della palette e dei nomi dei colori
 DEFAULT_PALETTE_RGB = [
     (236, 234, 226),  # Bianco (da LAB: 91.18, -1.10, 3.32)
