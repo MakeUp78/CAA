@@ -6,22 +6,27 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from PIL import Image
+from formulazioneSIL import generate_mixture  # Importa la funzione per la formulazione
 
-
-# Deve essere il primo comando Streamlit
 st.set_page_config(layout="wide")
 
-# CSS per nascondere il menu, il footer, l'header e il pulsante "Manage app"
-hide_st_style = """
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {display:none;}
-    #stDecoration {display:none;}
-    </style>
-    """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+# Definizione della palette e dei nomi dei colori
+DEFAULT_PALETTE_RGB = [
+    (236, 234, 226),  # Bianco (da LAB: 91.18, -1.10, 3.32)
+    (13, 39, 45),  # Verde (da LAB: 11.57, -16.83, -6.38)
+    (255, 195, 0),  # Giallo (da LAB: 78.24, -3.12, 97.93)
+    (180, 40, 41),  # Rosso (da LAB: 39.53, 61.07, 56.24)
+    (0, 20, 141),  # Blu (da LAB: 15.50, 28.46, -54.12)
+]
+
+
+palette_names = [
+    "Bianco",
+    "Verde",
+    "Giallo",
+    "Rosso",
+    "Blu",
+]
 
 
 def create_circular_mask(h, w, center, radius):
@@ -110,9 +115,8 @@ def get_download_link(img, filename, text):
 
 st.title("Compact Image Deconstruction for Water Colors", anchor=False)
 
-col1, col2, col3 = st.columns([1, 2, 1])
-
-with col1:
+# Sidebar con caricamento file e controlli
+with st.sidebar:
     uploaded_file = st.file_uploader("Choose image", type=["jpg", "png", "jpeg"])
 
     if uploaded_file is not None:
@@ -120,6 +124,7 @@ with col1:
         image = cv2.imdecode(file_bytes, 1)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+        # Inizializza lo stato di posizione della maschera
         if "center_x" not in st.session_state:
             st.session_state.center_x = image.shape[1] // 2
         if "center_y" not in st.session_state:
@@ -127,13 +132,7 @@ with col1:
         if "radius" not in st.session_state:
             st.session_state.radius = min(image.shape[0], image.shape[1]) // 4
 
-        sensitivity = st.slider(
-            "Sketch Sensitivity:", 10, 200, 50, 10, key="sensitivity"
-        )
-        color_threshold = st.slider(
-            "Color Threshold:", 10, 100, 30, 5, key="color_threshold"
-        )
-
+        # Sezione di controllo posizione della maschera
         st.write("Move and Resize:")
         col_controls = st.columns(3)
         with col_controls[0]:
@@ -185,39 +184,72 @@ with col1:
                 ),
             )
 
-with col2:
-    if uploaded_file is not None:
-        mask = create_circular_mask(
-            image.shape[0],
-            image.shape[1],
-            (st.session_state.center_x, st.session_state.center_y),
-            st.session_state.radius,
+        # Slider per sensibilità del contorno e soglia del colore
+        sensitivity = st.slider(
+            "Sketch Sensitivity:", 10, 200, 50, 10, key="sensitivity"
         )
-        gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        gray_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
-        gray_image = cv2.addWeighted(
-            gray_image, 0.7, np.ones_like(gray_image) * 255, 0.3, 0
+        color_threshold = st.slider(
+            "Color Threshold:", 10, 100, 30, 5, key="color_threshold"
         )
-        masked_image = np.where(mask[..., None], image, gray_image)
-        st.image(masked_image, caption="Selected Region", use_column_width=True)
 
-        colors = get_dominant_colors(image, mask)
-        st.write("Dominant Colors:")
-        fig, ax = plt.subplots(figsize=(6, 0.5))
-        ax.axis("off")
-        ax.imshow([colors], aspect="auto")
-        st.pyplot(fig)
+        # Pulsante per iniziare il calcolo dei colori dominanti e delle formulazioni
+        if st.button("Calcola colori dominanti e formulazione"):
+            st.session_state.start_calculation = (
+                True  # Imposta il flag per iniziare il calcolo
+            )
 
+    # Mostra la palette alla fine della sidebar
+    st.write("Palette in uso:")
+    for color, name in zip(DEFAULT_PALETTE_RGB, palette_names):
+        color_box = f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb{color}; margin-right: 10px;"></div>'
+        st.markdown(f"{color_box} **{name}**", unsafe_allow_html=True)
+
+# Visualizza l'immagine caricata e la maschera selezionata
+if uploaded_file is not None:
+    mask = create_circular_mask(
+        image.shape[0],
+        image.shape[1],
+        (st.session_state.center_x, st.session_state.center_y),
+        st.session_state.radius,
+    )
+    gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    gray_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
+    gray_image = cv2.addWeighted(
+        gray_image, 0.7, np.ones_like(gray_image) * 255, 0.3, 0
+    )
+    masked_image = np.where(mask[..., None], image, gray_image)
+    st.image(masked_image, caption="Selected Region", use_column_width=True)
+
+# Solo se il calcolo è stato avviato, esegui il resto dell'elaborazione
+if uploaded_file is not None and st.session_state.get("start_calculation"):
+    # Calcolo dei colori dominanti e delle immagini di sketch e overlay
+    colors = get_dominant_colors(image, mask)
+    st.write("Dominant Colors:")
+    fig, ax = plt.subplots(figsize=(6, 0.5))
+    ax.axis("off")
+    ax.imshow([colors], aspect="auto")
+    st.pyplot(fig)
+
+    # Sezione in due colonne per Sketch e Overlayed Color Distribution
+    col1, col2 = st.columns(2)
+
+    with col1:
         sketch = to_sketch(image, mask, sensitivity)
         st.image(sketch, caption="Sketch", use_column_width=True)
 
+    with col2:
         overlay = overlay_sketches(image, colors, mask, color_threshold)
         st.image(overlay, caption="Overlayed Color Distribution", use_column_width=True)
 
-with col3:
-    if uploaded_file is not None:
-        st.write("Color Highlights and Distribution Sketches:")
-        for i, color_name in enumerate(["Darkest", "Middle", "Brightest"]):
+    # Divider line
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    # Organizzazione delle informazioni per ciascun colore dominante
+    for i, color_name in enumerate(["Darkest", "Middle", "Brightest"]):
+        st.markdown(f"## {color_name} Color")
+        col1, col2 = st.columns(2)
+
+        with col1:
             highlighted = highlight_color(image, colors[i], color_threshold, mask)
             st.image(
                 highlighted,
@@ -225,28 +257,51 @@ with col3:
                 use_column_width=True,
             )
 
+            # Visualizzazione delle informazioni RGB e formulazione
+            st.write(f"**RGB:** {colors[i]}")
+            st.write(f"**Formulation for {color_name}:**")
+            formulation = generate_mixture(colors[i])
+            optimized_weights = formulation["optimized_weights"]
+            mixture_rgb = formulation["mixture_rgb"]
+
+            for weight, name, rgb in zip(
+                optimized_weights, palette_names, DEFAULT_PALETTE_RGB
+            ):
+                if weight > 0:
+                    color_preview = f'<div style="display: inline-block; width: 12px; height: 12px; background-color: rgb{rgb}; margin-right: 8px;"></div>'
+                    st.markdown(
+                        f"{color_preview} **{name}:** {weight:.2f} g",
+                        unsafe_allow_html=True,
+                    )
+            st.write(f"**Resulting RGB from mixture:** {mixture_rgb}")
+
+        with col2:
             color_sketch_img = color_sketch(image, colors[i], mask, color_threshold)
             st.image(
                 color_sketch_img,
                 caption=f"{color_name} Color Distribution",
                 use_column_width=True,
             )
+            coverage = get_color_percentage(image, colors[i], mask, color_threshold)
+            st.write(f"**Coverage:** {coverage:.2f}%")
 
-            percentage = get_color_percentage(image, colors[i], mask, color_threshold)
-            st.write(f"{color_name} Color:")
-            st.write(f"RGB: {colors[i]}")
-            st.write(f"Coverage: {percentage:.2f}%")
+        if i < 2:
+            st.markdown("<hr>", unsafe_allow_html=True)
 
-        st.write("Download Results:")
-        st.markdown(
-            get_download_link(Image.fromarray(sketch), "sketch.png", "Download Sketch"),
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            get_download_link(
-                Image.fromarray(overlay),
-                "overlay.png",
-                "Download Color Distribution Overlay",
-            ),
-            unsafe_allow_html=True,
-        )
+    # Divider line prima del Download
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    # Sezione di download
+    st.write("### Download Results")
+    st.markdown(
+        get_download_link(Image.fromarray(sketch), "sketch.png", "Download Sketch"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        get_download_link(
+            Image.fromarray(overlay),
+            "overlay.png",
+            "Download Color Distribution Overlay",
+        ),
+        unsafe_allow_html=True,
+    )
