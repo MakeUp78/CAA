@@ -7,7 +7,6 @@ import io
 import base64
 from PIL import Image
 from formulazioneSIL import generate_mixture  # Importa la funzione per la formulazione
-from sketch import pencilsketch
 
 st.set_page_config(
     page_title="Areola Color Analisi",
@@ -142,23 +141,10 @@ st.title("Compact Image Deconstruction for Water Colors", anchor=False)
 with st.sidebar:
     uploaded_file = st.file_uploader("Choose image", type=["jpg", "png", "jpeg"])
 
-        # Modifica solo questa parte dopo il file uploader, il resto rimane uguale
     if uploaded_file is not None:
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         image = cv2.imdecode(file_bytes, 1)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
-        # Mostra l'immagine originale e la versione pencil sketch
-        st.write("### Original vs Pencil Sketch")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(image, caption="Original Image", use_column_width=True)
-        with col2:
-            pencil_image = pencilsketch(image)
-            st.image(pencil_image, caption="Pencil Sketch Version", use_column_width=True)
-        
-        # Aggiungi un separatore
-        st.markdown("<hr>", unsafe_allow_html=True)
 
         # Inizializza lo stato di posizione della maschera
         if "center_x" not in st.session_state:
