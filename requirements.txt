@@ -7,3 +7,4 @@ Pillow>=10.0.0
 pandas>=2.0.0
 mixbox>=1.0.1
 colormath>=3.0.0
+wordpress-auth
