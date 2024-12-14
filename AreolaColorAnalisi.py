@@ -8,36 +8,8 @@ import base64
 from PIL import Image
 from formulazioneSIL import generate_mixture  # Importa la funzione per la formulazione
 from sketch import pencilsketch
-import requests
-import streamlit as st
 
-API_KEY = 'YOUR_API_KEY'  # Set your API key here
-
-st.set_page_config(layout="wide")
-
-def get_token(username, password):
-    ip_address = st.experimental_get_query_params()['ip'][0]
-    response = requests.post(
-        'https://yourwordpressurl.com/wp-json/jwt-auth/v1/token',
-        data={'username': username, 'password': password, 'ip_address': ip_address},
-        headers={'X-API-KEY': API_KEY}
-    )
-    if response.status_code == 200:
-        return response.json()['token']
-    else:
-        return None
-
-def verify_token(token):
-    ip_address = st.experimental_get_query_params()['ip'][0]  
-    response = requests.post(
-        'https://yourwordpressurl.com/wp-json/jwt-auth/v1/token/validate',
-        headers={'Authorization': f'Bearer {token}', 'X-API-KEY': API_KEY},
-        data={'ip_address': ip_address}
-    )
-    return response.status_code == 200
-
-def main():
-    st.set_page_config(
+st.set_page_config(
     page_title="Areola Color Analisi",
     page_icon="🔍",
     layout="wide",
@@ -369,34 +341,3 @@ if uploaded_file is not None and st.session_state.get("start_calculation"):
         ),
         unsafe_allow_html=True,
     )
-
-
-# Check if the user is already logged in
-if 'token' in st.session_state and verify_token(st.session_state['token']):
-    main()  # Call the main function
-else:
-    # Show the login form
-    col1, col2, col3 = st.columns([1,1,1])
-
-    with col1:
-        st.write("")
-
-    with col2:
-        with st.form(key='login_form'):
-            st.title("Please log in")
-            username = st.text_input('Username')
-            password = st.text_input('Password', type='password')
-            submit_button = st.form_submit_button(label='Log in')
-
-            if submit_button:
-                token = get_token(username, password)
-                if token and verify_token(token):
-                    st.session_state['token'] = token  # We store the token in the session state
-                    st.experimental_rerun()  # Reload the page so that the login form disappears
-                else:
-                    st.error('Access denied')
-
-    with col3:
-        st.write("")
-
-
